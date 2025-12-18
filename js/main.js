@@ -1,10 +1,29 @@
 import { fetchPlaces, fetchAllReviews, fetchReviewsForPlace, insertReview } from "./db.js";
 
+// Adjust marker colors 
+const defaultIcon = L.icon({
+  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41],
+});
+
+const selectedIcon = L.icon({
+  iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png",
+  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41],
+});
 
 const statusEl = document.getElementById("status");
 const selectedEl = document.getElementById("selected");
-const reviewsEl = document.getElementById("reviews");
 
+const reviewsEl = document.getElementById("reviews");
+const selectedReviewEl = document.getElementById("selected-review");
 const formEl = document.getElementById("review-form");
 const submitBtn = document.getElementById("submit-review");
 
@@ -13,18 +32,87 @@ const minReviewsEl = document.getElementById("minReviews");
 const cuisineFilterEl = document.getElementById("cuisineFilter");
 const rankedEl = document.getElementById("ranked");
 
+const tabDiscover = document.getElementById("tab-discover");
+const tabReview = document.getElementById("tab-review");
+const panelDiscover = document.getElementById("panel-discover");
+const panelReview = document.getElementById("panel-review");
+const searchEl = document.getElementById("search");
+const clearFiltersBtn = document.getElementById("clear-filters");
+
+const reviewFormWrap = document.getElementById("review-form-wrap");
+const reviewSuccessEl = document.getElementById("review-success");
+const reviewAgainBtn = document.getElementById("review-again");
+const reviewOverlayEl = document.getElementById("review-overlay");
+const reviewCloseBtn = document.getElementById("review-close");
 
 // store markers so we can interact with them later
 const markersByPlaceId = new Map();
 
 let placesCache = [];
+let selectedMarker = null;
 function refreshRankings() {
   const occasion = vibeSelect.value;
   const minReviews = Number(minReviewsEl.value || 0);
-  const cuisineFilter = cuisineFilterEl ? cuisineFilterEl.value : ""; // <-- VALUE
-  renderRankedList(placesCache, occasionStats, occasion, minReviews, cuisineFilter);
+  const cuisineFilter = cuisineFilterEl ? cuisineFilterEl.value : ""; 
+  renderRankedList(placesCache, occasionStats, occasion, minReviews, cuisineFilter, searchQuery);
 }
 
+// Search bar
+let searchQuery = "";
+if (searchEl) {
+  searchEl.addEventListener("input", () => {
+    searchQuery = searchEl.value.trim().toLowerCase();
+    refreshRankings();
+  });
+}
+
+// Clear filter button
+if (clearFiltersBtn) {
+  clearFiltersBtn.addEventListener("click", () => {
+    if (vibeSelect) vibeSelect.value = "";             
+    if (cuisineFilterEl) cuisineFilterEl.value = "";   
+    if (minReviewsEl) minReviewsEl.value = "1";        
+    if (searchEl) searchEl.value = "";                  
+    searchQuery = "";                                 
+
+    refreshRankings();
+  });
+}
+
+// Randomize suggestions
+function shuffle(array) {
+  const a = array.slice();
+  for (let i = a.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function setActiveTab(which) {
+  const isDiscover = which === "discover";
+
+  tabDiscover.classList.toggle("is-active", isDiscover);
+  tabReview.classList.toggle("is-active", !isDiscover);
+
+  tabDiscover.setAttribute("aria-selected", String(isDiscover));
+  tabReview.setAttribute("aria-selected", String(!isDiscover));
+
+  panelDiscover.hidden = !isDiscover;
+  panelReview.hidden = isDiscover;
+}
+
+if (tabDiscover && tabReview && panelDiscover && panelReview) {
+  tabDiscover.addEventListener("click", () => setActiveTab("discover"));
+  tabReview.addEventListener("click", () => setActiveTab("review"));
+}
+
+// Zoom to marker
+function focusMarker(marker, zoom = 17) {
+  if (!mapRef) return;
+  const latlng = marker.getLatLng();
+  mapRef.setView(latlng, zoom, { animate: true });
+}
 
 function mean(nums) {
   return nums.length ? nums.reduce((a, b) => a + b, 0) / nums.length : null;
@@ -58,15 +146,89 @@ function buildOccasionStats(reviews) {
   return stats;
 }
 
+// Review success function
+function showReviewSuccess() {
+  if (reviewFormWrap) reviewFormWrap.hidden = true;
+  if (reviewSuccessEl) reviewSuccessEl.hidden = false;
+}
+
+function showReviewForm() {
+  if (reviewSuccessEl) reviewSuccessEl.hidden = true;
+  if (reviewFormWrap) reviewFormWrap.hidden = false;
+}
+
+function showReviewOverlay() {
+  if (!reviewOverlayEl) return;
+  reviewOverlayEl.hidden = false;
+  reviewOverlayEl.setAttribute("aria-hidden", "false");
+}
+
+function hideReviewOverlay() {
+  if (!reviewOverlayEl) return;
+  reviewOverlayEl.hidden = true;
+  reviewOverlayEl.setAttribute("aria-hidden", "true");
+}
+
+if (reviewCloseBtn) {
+  reviewCloseBtn.addEventListener("click", hideReviewOverlay);
+}
+
+if (reviewAgainBtn) {
+  reviewAgainBtn.addEventListener("click", () => {
+    hideReviewOverlay();
+
+    // Clear optional fields
+    const orderEl = document.getElementById("order");
+    const noteEl = document.getElementById("note");
+    if (orderEl) orderEl.value = "";
+    if (noteEl) noteEl.value = "";
+
+    // Clear star ratings
+    document.querySelectorAll('input[name="foodRating"]').forEach((el) => (el.checked = false));
+    document.querySelectorAll('input[name="valueRating"]').forEach((el) => (el.checked = false));
+    document.querySelectorAll('input[name="vibeRating"]').forEach((el) => (el.checked = false));
+  });
+}
+
 let mapRef = null
 
-function renderRankedList(places, occasionStats, occasion, minReviews, cuisineFilter) {
-  // give matches based on cuisine
-  const candidates = cuisineFilter
-  ? places.filter(p => splitCuisines(p.cuisine).includes(cuisineFilter))
-  : places;
+function renderRankedList(places, occasionStats, occasion, minReviews, cuisineFilter,searchQuery) {
+  // candidates filtered by cuisine
+  let candidates = cuisineFilter
+    ? places.filter((p) => splitCuisines(p.cuisine).includes(cuisineFilter))
+    : places;
 
-  // Build ranked array
+  // Add search query
+  if (searchQuery) {
+    candidates = candidates.filter((p) => {
+      const name = (p.name || "").toLowerCase();
+      return name.includes(searchQuery);
+    });
+  }
+
+  // Show suggestions if no category is selected
+  if (!occasion) {
+    const suggestions = shuffle(
+      candidates.filter((p) => typeof p.lat === "number" && typeof p.lng === "number")
+    ).slice(0, 5);
+
+    rankedEl.innerHTML = `
+      <p><strong>Suggestions to explore:</strong></p>
+      ${suggestions.map((p, idx) => `
+        <div style="padding:8px 0; ${idx ? "border-top:1px solid #ddd;" : ""}">
+          <button class="rank-item" data-place-id="${p.id}" style="all:unset; cursor:pointer; display:block;">
+            <div><strong>${p.name ?? "Unnamed place"}</strong></div>
+            ${p.cuisine ? `<div><small>${p.cuisine}</small></div>` : ""}
+          </button>
+        </div>
+      `).join("")}
+    `;
+
+    wireRankClicks(); 
+    return;
+  }
+
+  // Build ranked array (review-based)
   const ranked = candidates
     .map((p) => {
       const placeOccStats = occasionStats.get(p.id);
@@ -81,41 +243,71 @@ function renderRankedList(places, occasionStats, occasion, minReviews, cuisineFi
     .sort((a, b) => b.avg - a.avg)
     .slice(0, 10);
 
-    if (!ranked.length) {
-      const suggestions = candidates
-        .filter(p => typeof p.lat === "number" && typeof p.lng === "number")
-        .slice(0, 5);
-    
-      rankedEl.innerHTML = `
-        <p>No reviewed matches yet for <strong>${occasion}</strong>${cuisineFilter ? ` (${cuisineFilter})` : ""}.</p>
-        <p><strong>Suggestions to explore:</strong></p>
-        ${suggestions.map((p, idx) => `
-          <div style="padding:8px 0; ${idx ? "border-top:1px solid #ddd;" : ""}">
-            <button class="rank-item" data-place-id="${p.id}" style="all:unset; cursor:pointer; display:block;">
-              <div><strong>${p.name ?? "Unnamed place"}</strong></div>
-              ${p.cuisine ? `<div><small>${p.cuisine}</small></div>` : ""}
-            </button>
-          </div>
-        `).join("")}
-      `;
-    
-      rankedEl.querySelectorAll(".rank-item").forEach((btn) => {
-        btn.addEventListener("click", () => {
-          const placeId = btn.dataset.placeId;
-          const marker = markersByPlaceId.get(placeId);
-          if (marker && mapRef) {
-            // Zoom to marker (use setView or flyTo)
-            mapRef.setView(marker.getLatLng(), 17, { animate: true });          
-            marker.openPopup();
-            marker.fire("click");
-          }
-          
+  // Helper to wire clicks for zoom + select
+  function wireRankClicks() {
+    rankedEl.querySelectorAll(".rank-item").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const placeId = btn.dataset.placeId;
+        const marker = markersByPlaceId.get(placeId);
+        if (!marker || !mapRef) return;
+          focusMarker(marker, 17);
+          marker.openPopup();
+          marker.fire("click");
         });
-      });
-    
-      return;
-    }    
+    });
+  }
+
+  // Render ranked results
+  if (ranked.length) {
+    rankedEl.innerHTML = `
+      <p style="margin:0 0 8px 0;">
+        Top matches for <strong>${occasion}</strong>${cuisineFilter ? ` (${cuisineFilter})` : ""}:
+      </p>
+      ${ranked
+        .map((x, idx) => {
+          const p = x.place;
+          return `
+            <div style="padding:8px 0; ${idx ? "border-top:1px solid #ddd;" : ""}">
+              <button class="rank-item" data-place-id="${p.id}" style="all:unset; cursor:pointer; display:block;">
+                <div><strong>${idx + 1}. ${p.name ?? "Unnamed place"}</strong></div>
+                <div>${x.avg.toFixed(2)}/5 • ${x.count} review${x.count === 1 ? "" : "s"}</div>
+                ${p.cuisine ? `<div><small>${p.cuisine}</small></div>` : ""}
+              </button>
+            </div>
+          `;
+        })
+        .join("")}
+    `;
+
+    wireRankClicks();
+    return;
+  }
+
+  // No ranked results yet — show randomized suggestions
+  const suggestions = shuffle(
+    candidates.filter((p) => typeof p.lat === "number" && typeof p.lng === "number")
+  ).slice(0, 5);  
+
+  rankedEl.innerHTML = `
+    <p>No reviewed matches yet for <strong>${occasion}</strong>${cuisineFilter ? ` (${cuisineFilter})` : ""}.</p>
+    <p><strong>Suggestions to explore:</strong></p>
+    ${suggestions.length
+      ? suggestions
+          .map((p, idx) => `
+            <div style="padding:8px 0; ${idx ? "border-top:1px solid #ddd;" : ""}">
+              <button class="rank-item" data-place-id="${p.id}" style="all:unset; cursor:pointer; display:block;">
+                <div><strong>${p.name ?? "Unnamed place"}</strong></div>
+                ${p.cuisine ? `<div><small>${p.cuisine}</small></div>` : ""}
+              </button>
+            </div>
+          `)
+          .join("")
+      : `<p><em>No suggestions found for this filter. Try “Any cuisine”.</em></p>`}
+  `;
+
+  wireRankClicks();
 }
+
 
 // Filter by cuisine
 function normalizeCuisine(c) {
@@ -159,22 +351,43 @@ function setStatus(html) {
 function setSelected(place) {
   selectedPlace = place;
 
+  // Reset previous marker
+  if (selectedMarker) {
+    selectedMarker.setIcon(defaultIcon);
+    selectedMarker = null;
+  }
+
   if (!place) {
-    selectedEl.innerHTML = `<p>Click a pin to see details.</p>`;
+    const empty = `<p>Click a pin to see details.</p>`;
+    selectedEl.innerHTML = empty;
+    if (selectedReviewEl) selectedReviewEl.innerHTML = `<p>No place selected yet. Click a pin or a suggestion.</p>`;
     reviewsEl.innerHTML = `<p>No place selected.</p>`;
     submitBtn.disabled = true;
     submitBtn.textContent = "Pick a place first";
     return;
   }
 
-  selectedEl.innerHTML = `
+  const html = `
     <h3 style="margin:0 0 6px 0;">${place.name ?? "Unnamed place"}</h3>
     ${place.cuisine ? `<p style="margin:0 0 6px 0;"><strong>Cuisine:</strong> ${place.cuisine}</p>` : ""}
     ${place.address ? `<p style="margin:0 0 6px 0;"><strong>Address:</strong> ${place.address}</p>` : ""}
   `;
 
+  // Populate both tabs
+  selectedEl.innerHTML = html;
+  if (selectedReviewEl) selectedReviewEl.innerHTML = html;
+
   submitBtn.disabled = false;
   submitBtn.textContent = "Submit review";
+
+  // Highlight selected marker
+  const marker = markersByPlaceId.get(place.id);
+  if (marker) {
+    marker.setIcon(selectedIcon);
+    selectedMarker = marker;
+    focusMarker(marker, 17);
+    marker.openPopup();
+  }
 
   loadReviews(place.id);
 }
@@ -243,10 +456,13 @@ function initMap() {
   const philly = [39.9526, -75.1652];
   const map = L.map("map").setView(philly, 12);
 
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    maxZoom: 19,
-    attribution: '&copy; OpenStreetMap contributors',
-  }).addTo(map);
+  L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
+  attribution:
+    '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+  subdomains: "abcd",
+  maxZoom: 20,
+}).addTo(map);
+
 
   return map;
 }
@@ -271,7 +487,7 @@ async function main() {
     let added = 0;
     for (const p of placesCache) {
       if (typeof p.lat !== "number" || typeof p.lng !== "number") continue;
-      const marker = L.marker([p.lat, p.lng]).addTo(map);
+      const marker = L.marker([p.lat, p.lng], { icon: defaultIcon }).addTo(map);
       marker.bindPopup(`<strong>${p.name ?? "Unnamed place"}</strong>`);
       marker.on("click", () => setSelected(p));
       markersByPlaceId.set(p.id, marker); // so ranked list can jump to pins
@@ -334,6 +550,8 @@ if(formEl) {
 
     // Refresh the reviews panel
     await loadReviews(selectedPlace.id);
+
+    showReviewOverlay();
 
   } catch (err) {
     console.error(err);

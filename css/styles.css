@@ -22,9 +22,15 @@ body {
   font-size: 20px;
 }
 
+.site-header h2 {
+  margin: 0 0 4px;
+  font-size: 17px;
+}
+
 .tagline {
   margin: 0;
   color: #444;
+  font-size: 15px;
 }
 
 .layout {
@@ -77,6 +83,32 @@ button:focus-visible, a:focus-visible {
   outline-offset: 2px;
 }
 
+.tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.tab {
+  border: 1px solid var(--border);
+  background: white;
+  border-radius: 10px;
+  padding: 8px 10px;
+  cursor: pointer;
+}
+
+.tab.is-active {
+  background: var(--bg);
+  font-weight: 600;
+}
+
+/* helps on keyboard focus */
+.tab:focus-visible {
+  outline: 3px solid #000;
+  outline-offset: 2px;
+}
+
 .stars {
   display: inline-flex;
   flex-direction: row-reverse; 
@@ -117,6 +149,43 @@ button:focus-visible, a:focus-visible {
   opacity: 1;
 }
 
+.overlay[hidden] {
+  display: none;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;               /* top/right/bottom/left:0 */
+  display: grid;
+  place-items: center;
+  background: rgba(0 0 0 / 35%);
+  padding: 12px;
+  z-index: 10;
+}
+
+/* Make sure panel-review can contain the absolutely positioned overlay */
+#panel-review {
+  position: relative;
+}
+
+.overlay-card {
+  width: min(420px, 100%);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+}
+
+.overlay-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+#clear-filters {
+  margin-top: 8px;
+  width: 100%;
+}
 
 @media (width <= 900px) {
   .layout {
