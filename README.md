@@ -97,9 +97,6 @@ This project explores how **community data**, **spatial interfaces**, and **cont
 Instead of asking users to rank restaurants against each other, *Find Your Spot* helps people find the right place for the right moment.
 
 ---
-Absolutely — here’s a **more concise version** that keeps the key ideas without feeling long or repetitive. This fits very nicely at the end of a README.
-
----
 
 ## Areas for Future Improvement
 
