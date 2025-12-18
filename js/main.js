@@ -520,7 +520,7 @@ if (formEl) {
         food,
         value,
         vibe,
-        goToOrder,
+        go_to_order: goToOrder,
         note,
       });
 
