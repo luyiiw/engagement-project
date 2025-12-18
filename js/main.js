@@ -1,9 +1,9 @@
-import { fetchPlaces, fetchAllReviews, fetchReviewsForPlace, insertReview } from "./db.js";
+import { fetchPlaces, fetchAllReviews, fetchReviewsForPlace, insertReview } from './db.js';
 
-// Adjust marker colors 
+// Adjust marker colors
 const defaultIcon = L.icon({
-  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
   iconSize: [25, 41],
   iconAnchor: [12, 41],
   popupAnchor: [1, -34],
@@ -11,39 +11,37 @@ const defaultIcon = L.icon({
 });
 
 const selectedIcon = L.icon({
-  iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png",
-  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
+  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
   iconSize: [25, 41],
   iconAnchor: [12, 41],
   popupAnchor: [1, -34],
   shadowSize: [41, 41],
 });
 
-const statusEl = document.getElementById("status");
-const selectedEl = document.getElementById("selected");
+const statusEl = document.getElementById('status');
+const selectedEl = document.getElementById('selected');
 
-const reviewsEl = document.getElementById("reviews");
-const selectedReviewEl = document.getElementById("selected-review");
-const formEl = document.getElementById("review-form");
-const submitBtn = document.getElementById("submit-review");
+const reviewsEl = document.getElementById('reviews');
+const selectedReviewEl = document.getElementById('selected-review');
+const formEl = document.getElementById('review-form');
+const submitBtn = document.getElementById('submit-review');
 
-const vibeSelect = document.getElementById("vibe");
-const minReviewsEl = document.getElementById("minReviews");
-const cuisineFilterEl = document.getElementById("cuisineFilter");
-const rankedEl = document.getElementById("ranked");
+const vibeSelect = document.getElementById('vibe');
+const minReviewsEl = document.getElementById('minReviews');
+const cuisineFilterEl = document.getElementById('cuisineFilter');
+const rankedEl = document.getElementById('ranked');
 
-const tabDiscover = document.getElementById("tab-discover");
-const tabReview = document.getElementById("tab-review");
-const panelDiscover = document.getElementById("panel-discover");
-const panelReview = document.getElementById("panel-review");
-const searchEl = document.getElementById("search");
-const clearFiltersBtn = document.getElementById("clear-filters");
+const tabDiscover = document.getElementById('tab-discover');
+const tabReview = document.getElementById('tab-review');
+const panelDiscover = document.getElementById('panel-discover');
+const panelReview = document.getElementById('panel-review');
+const searchEl = document.getElementById('search');
+const clearFiltersBtn = document.getElementById('clear-filters');
 
-const reviewFormWrap = document.getElementById("review-form-wrap");
-const reviewSuccessEl = document.getElementById("review-success");
-const reviewAgainBtn = document.getElementById("review-again");
-const reviewOverlayEl = document.getElementById("review-overlay");
-const reviewCloseBtn = document.getElementById("review-close");
+const reviewAgainBtn = document.getElementById('review-again');
+const reviewOverlayEl = document.getElementById('review-overlay');
+const reviewCloseBtn = document.getElementById('review-close');
 
 // store markers so we can interact with them later
 const markersByPlaceId = new Map();
@@ -53,14 +51,14 @@ let selectedMarker = null;
 function refreshRankings() {
   const occasion = vibeSelect.value;
   const minReviews = Number(minReviewsEl.value || 0);
-  const cuisineFilter = cuisineFilterEl ? cuisineFilterEl.value : ""; 
+  const cuisineFilter = cuisineFilterEl ? cuisineFilterEl.value : '';
   renderRankedList(placesCache, occasionStats, occasion, minReviews, cuisineFilter, searchQuery);
 }
 
 // Search bar
-let searchQuery = "";
+let searchQuery = '';
 if (searchEl) {
-  searchEl.addEventListener("input", () => {
+  searchEl.addEventListener('input', () => {
     searchQuery = searchEl.value.trim().toLowerCase();
     refreshRankings();
   });
@@ -68,12 +66,12 @@ if (searchEl) {
 
 // Clear filter button
 if (clearFiltersBtn) {
-  clearFiltersBtn.addEventListener("click", () => {
-    if (vibeSelect) vibeSelect.value = "";             
-    if (cuisineFilterEl) cuisineFilterEl.value = "";   
-    if (minReviewsEl) minReviewsEl.value = "1";        
-    if (searchEl) searchEl.value = "";                  
-    searchQuery = "";                                 
+  clearFiltersBtn.addEventListener('click', () => {
+    if (vibeSelect) vibeSelect.value = '';
+    if (cuisineFilterEl) cuisineFilterEl.value = '';
+    if (minReviewsEl) minReviewsEl.value = '1';
+    if (searchEl) searchEl.value = '';
+    searchQuery = '';
 
     refreshRankings();
   });
@@ -90,21 +88,21 @@ function shuffle(array) {
 }
 
 function setActiveTab(which) {
-  const isDiscover = which === "discover";
+  const isDiscover = which === 'discover';
 
-  tabDiscover.classList.toggle("is-active", isDiscover);
-  tabReview.classList.toggle("is-active", !isDiscover);
+  tabDiscover.classList.toggle('is-active', isDiscover);
+  tabReview.classList.toggle('is-active', !isDiscover);
 
-  tabDiscover.setAttribute("aria-selected", String(isDiscover));
-  tabReview.setAttribute("aria-selected", String(!isDiscover));
+  tabDiscover.setAttribute('aria-selected', String(isDiscover));
+  tabReview.setAttribute('aria-selected', String(!isDiscover));
 
   panelDiscover.hidden = !isDiscover;
   panelReview.hidden = isDiscover;
 }
 
 if (tabDiscover && tabReview && panelDiscover && panelReview) {
-  tabDiscover.addEventListener("click", () => setActiveTab("discover"));
-  tabReview.addEventListener("click", () => setActiveTab("review"));
+  tabDiscover.addEventListener('click', () => setActiveTab('discover'));
+  tabReview.addEventListener('click', () => setActiveTab('review'));
 }
 
 // Zoom to marker
@@ -147,41 +145,31 @@ function buildOccasionStats(reviews) {
 }
 
 // Review success function
-function showReviewSuccess() {
-  if (reviewFormWrap) reviewFormWrap.hidden = true;
-  if (reviewSuccessEl) reviewSuccessEl.hidden = false;
-}
-
-function showReviewForm() {
-  if (reviewSuccessEl) reviewSuccessEl.hidden = true;
-  if (reviewFormWrap) reviewFormWrap.hidden = false;
-}
-
 function showReviewOverlay() {
   if (!reviewOverlayEl) return;
   reviewOverlayEl.hidden = false;
-  reviewOverlayEl.setAttribute("aria-hidden", "false");
+  reviewOverlayEl.setAttribute('aria-hidden', 'false');
 }
 
 function hideReviewOverlay() {
   if (!reviewOverlayEl) return;
   reviewOverlayEl.hidden = true;
-  reviewOverlayEl.setAttribute("aria-hidden", "true");
+  reviewOverlayEl.setAttribute('aria-hidden', 'true');
 }
 
 if (reviewCloseBtn) {
-  reviewCloseBtn.addEventListener("click", hideReviewOverlay);
+  reviewCloseBtn.addEventListener('click', hideReviewOverlay);
 }
 
 if (reviewAgainBtn) {
-  reviewAgainBtn.addEventListener("click", () => {
+  reviewAgainBtn.addEventListener('click', () => {
     hideReviewOverlay();
 
     // Clear optional fields
-    const orderEl = document.getElementById("order");
-    const noteEl = document.getElementById("note");
-    if (orderEl) orderEl.value = "";
-    if (noteEl) noteEl.value = "";
+    const orderEl = document.getElementById('order');
+    const noteEl = document.getElementById('note');
+    if (orderEl) orderEl.value = '';
+    if (noteEl) noteEl.value = '';
 
     // Clear star ratings
     document.querySelectorAll('input[name="foodRating"]').forEach((el) => (el.checked = false));
@@ -190,9 +178,9 @@ if (reviewAgainBtn) {
   });
 }
 
-let mapRef = null
+let mapRef = null;
 
-function renderRankedList(places, occasionStats, occasion, minReviews, cuisineFilter,searchQuery) {
+function renderRankedList(places, occasionStats, occasion, minReviews, cuisineFilter, searchQuery) {
   // candidates filtered by cuisine
   let candidates = cuisineFilter
     ? places.filter((p) => splitCuisines(p.cuisine).includes(cuisineFilter))
@@ -201,7 +189,7 @@ function renderRankedList(places, occasionStats, occasion, minReviews, cuisineFi
   // Add search query
   if (searchQuery) {
     candidates = candidates.filter((p) => {
-      const name = (p.name || "").toLowerCase();
+      const name = (p.name || '').toLowerCase();
       return name.includes(searchQuery);
     });
   }
@@ -209,22 +197,22 @@ function renderRankedList(places, occasionStats, occasion, minReviews, cuisineFi
   // Show suggestions if no category is selected
   if (!occasion) {
     const suggestions = shuffle(
-      candidates.filter((p) => typeof p.lat === "number" && typeof p.lng === "number")
+      candidates.filter((p) => typeof p.lat === 'number' && typeof p.lng === 'number'),
     ).slice(0, 5);
 
     rankedEl.innerHTML = `
       <p><strong>Suggestions to explore:</strong></p>
       ${suggestions.map((p, idx) => `
-        <div style="padding:8px 0; ${idx ? "border-top:1px solid #ddd;" : ""}">
+        <div style="padding:8px 0; ${idx ? 'border-top:1px solid #ddd;' : ''}">
           <button class="rank-item" data-place-id="${p.id}" style="all:unset; cursor:pointer; display:block;">
-            <div><strong>${p.name ?? "Unnamed place"}</strong></div>
-            ${p.cuisine ? `<div><small>${p.cuisine}</small></div>` : ""}
+            <div><strong>${p.name ?? 'Unnamed place'}</strong></div>
+            ${p.cuisine ? `<div><small>${p.cuisine}</small></div>` : ''}
           </button>
         </div>
-      `).join("")}
+      `).join('')}
     `;
 
-    wireRankClicks(); 
+    wireRankClicks();
     return;
   }
 
@@ -245,15 +233,15 @@ function renderRankedList(places, occasionStats, occasion, minReviews, cuisineFi
 
   // Helper to wire clicks for zoom + select
   function wireRankClicks() {
-    rankedEl.querySelectorAll(".rank-item").forEach((btn) => {
-      btn.addEventListener("click", () => {
+    rankedEl.querySelectorAll('.rank-item').forEach((btn) => {
+      btn.addEventListener('click', () => {
         const placeId = btn.dataset.placeId;
         const marker = markersByPlaceId.get(placeId);
         if (!marker || !mapRef) return;
-          focusMarker(marker, 17);
-          marker.openPopup();
-          marker.fire("click");
-        });
+        focusMarker(marker, 17);
+        marker.openPopup();
+        marker.fire('click');
+      });
     });
   }
 
@@ -261,22 +249,22 @@ function renderRankedList(places, occasionStats, occasion, minReviews, cuisineFi
   if (ranked.length) {
     rankedEl.innerHTML = `
       <p style="margin:0 0 8px 0;">
-        Top matches for <strong>${occasion}</strong>${cuisineFilter ? ` (${cuisineFilter})` : ""}:
+        Top matches for <strong>${occasion}</strong>${cuisineFilter ? ` (${cuisineFilter})` : ''}:
       </p>
       ${ranked
-        .map((x, idx) => {
-          const p = x.place;
-          return `
-            <div style="padding:8px 0; ${idx ? "border-top:1px solid #ddd;" : ""}">
+    .map((x, idx) => {
+      const p = x.place;
+      return `
+            <div style="padding:8px 0; ${idx ? 'border-top:1px solid #ddd;' : ''}">
               <button class="rank-item" data-place-id="${p.id}" style="all:unset; cursor:pointer; display:block;">
-                <div><strong>${idx + 1}. ${p.name ?? "Unnamed place"}</strong></div>
-                <div>${x.avg.toFixed(2)}/5 • ${x.count} review${x.count === 1 ? "" : "s"}</div>
-                ${p.cuisine ? `<div><small>${p.cuisine}</small></div>` : ""}
+                <div><strong>${idx + 1}. ${p.name ?? 'Unnamed place'}</strong></div>
+                <div>${x.avg.toFixed(2)}/5 • ${x.count} review${x.count === 1 ? '' : 's'}</div>
+                ${p.cuisine ? `<div><small>${p.cuisine}</small></div>` : ''}
               </button>
             </div>
           `;
-        })
-        .join("")}
+    })
+    .join('')}
     `;
 
     wireRankClicks();
@@ -285,43 +273,35 @@ function renderRankedList(places, occasionStats, occasion, minReviews, cuisineFi
 
   // No ranked results yet — show randomized suggestions
   const suggestions = shuffle(
-    candidates.filter((p) => typeof p.lat === "number" && typeof p.lng === "number")
-  ).slice(0, 5);  
+    candidates.filter((p) => typeof p.lat === 'number' && typeof p.lng === 'number'),
+  ).slice(0, 5);
 
   rankedEl.innerHTML = `
-    <p>No reviewed matches yet for <strong>${occasion}</strong>${cuisineFilter ? ` (${cuisineFilter})` : ""}.</p>
+    <p>No reviewed matches yet for <strong>${occasion}</strong>${cuisineFilter ? ` (${cuisineFilter})` : ''}.</p>
     <p><strong>Suggestions to explore:</strong></p>
     ${suggestions.length
-      ? suggestions
-          .map((p, idx) => `
-            <div style="padding:8px 0; ${idx ? "border-top:1px solid #ddd;" : ""}">
+    ? suggestions
+      .map((p, idx) => `
+            <div style="padding:8px 0; ${idx ? 'border-top:1px solid #ddd;' : ''}">
               <button class="rank-item" data-place-id="${p.id}" style="all:unset; cursor:pointer; display:block;">
-                <div><strong>${p.name ?? "Unnamed place"}</strong></div>
-                ${p.cuisine ? `<div><small>${p.cuisine}</small></div>` : ""}
+                <div><strong>${p.name ?? 'Unnamed place'}</strong></div>
+                ${p.cuisine ? `<div><small>${p.cuisine}</small></div>` : ''}
               </button>
             </div>
           `)
-          .join("")
-      : `<p><em>No suggestions found for this filter. Try “Any cuisine”.</em></p>`}
+      .join('')
+    : `<p><em>No suggestions found for this filter. Try “Any cuisine”.</em></p>`}
   `;
 
   wireRankClicks();
-}
-
-
-// Filter by cuisine
-function normalizeCuisine(c) {
-  if (!c) return null;
-  // to manage OSM data format
-  return String(c).trim().toLowerCase();
 }
 
 function splitCuisines(c) {
   if (!c) return [];
   return String(c)
     .toLowerCase()
-    .split(";")
-    .map(s => s.trim())
+    .split(';')
+    .map((s) => s.trim())
     .filter(Boolean);
 }
 
@@ -337,7 +317,7 @@ function populateCuisineFilter(places) {
 
   cuisineFilterEl.innerHTML = `
     <option value="">Any cuisine</option>
-    ${cuisines.map(c => `<option value="${c}">${c}</option>`).join("")}
+    ${cuisines.map((c) => `<option value="${c}">${c}</option>`).join('')}
   `;
 }
 
@@ -363,14 +343,14 @@ function setSelected(place) {
     if (selectedReviewEl) selectedReviewEl.innerHTML = `<p>No place selected yet. Click a pin or a suggestion.</p>`;
     reviewsEl.innerHTML = `<p>No place selected.</p>`;
     submitBtn.disabled = true;
-    submitBtn.textContent = "Pick a place first";
+    submitBtn.textContent = 'Pick a place first';
     return;
   }
 
   const html = `
-    <h3 style="margin:0 0 6px 0;">${place.name ?? "Unnamed place"}</h3>
-    ${place.cuisine ? `<p style="margin:0 0 6px 0;"><strong>Cuisine:</strong> ${place.cuisine}</p>` : ""}
-    ${place.address ? `<p style="margin:0 0 6px 0;"><strong>Address:</strong> ${place.address}</p>` : ""}
+    <h3 style="margin:0 0 6px 0;">${place.name ?? 'Unnamed place'}</h3>
+    ${place.cuisine ? `<p style="margin:0 0 6px 0;"><strong>Cuisine:</strong> ${place.cuisine}</p>` : ''}
+    ${place.address ? `<p style="margin:0 0 6px 0;"><strong>Address:</strong> ${place.address}</p>` : ''}
   `;
 
   // Populate both tabs
@@ -378,7 +358,7 @@ function setSelected(place) {
   if (selectedReviewEl) selectedReviewEl.innerHTML = html;
 
   submitBtn.disabled = false;
-  submitBtn.textContent = "Submit review";
+  submitBtn.textContent = 'Submit review';
 
   // Highlight selected marker
   const marker = markersByPlaceId.get(place.id);
@@ -403,7 +383,7 @@ function renderReviews(reviews) {
     return;
   }
 
-  // Quick “best for” summary by occasion 
+  // Quick “best for” summary by occasion
   const byOccasion = new Map();
   for (const r of reviews) {
     if (!byOccasion.has(r.occasion)) byOccasion.set(r.occasion, []);
@@ -412,25 +392,25 @@ function renderReviews(reviews) {
 
   const summary = [...byOccasion.entries()]
     .map(([occ, arr]) => {
-      const score = avg(arr.map(x => (x.food + x.value + x.vibe) / 3));
+      const score = avg(arr.map((x) => (x.food + x.value + x.vibe) / 3));
       return `<li><strong>${occ}</strong>: ${score.toFixed(2)} (${arr.length})</li>`;
     })
-    .join("");
+    .join('');
 
   const items = reviews
     .slice(0, 10)
-    .map(r => {
+    .map((r) => {
       const score = ((r.food + r.value + r.vibe) / 3).toFixed(1);
       return `
         <div style="padding:8px 0; border-top:1px solid #ddd;">
           <div><strong>${r.occasion}</strong> • ${score}/5</div>
-          ${r.go_to_order ? `<div><em>Go-to:</em> ${r.go_to_order}</div>` : ""}
-          ${r.note ? `<div>${r.note}</div>` : ""}
+          ${r.go_to_order ? `<div><em>Go-to:</em> ${r.go_to_order}</div>` : ''}
+          ${r.note ? `<div>${r.note}</div>` : ''}
           <div><small>${new Date(r.created_at).toLocaleString()}</small></div>
         </div>
       `;
     })
-    .join("");
+    .join('');
 
   reviewsEl.innerHTML = `
     <div>
@@ -454,14 +434,14 @@ async function loadReviews(placeId) {
 
 function initMap() {
   const philly = [39.9526, -75.1652];
-  const map = L.map("map").setView(philly, 12);
+  const map = L.map('map').setView(philly, 12);
 
-  L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
-  attribution:
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    attribution:
     '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-  subdomains: "abcd",
-  maxZoom: 20,
-}).addTo(map);
+    subdomains: 'abcd',
+    maxZoom: 20,
+  }).addTo(map);
 
 
   return map;
@@ -475,33 +455,33 @@ async function main() {
   mapRef = map;
 
   try {
-    setStatus("<p>Loading places from Supabase…</p>");
+    setStatus('<p>Loading places from Supabase…</p>');
     placesCache = await fetchPlaces(2000);
     populateCuisineFilter(placesCache);
 
-    setStatus("<p>Loading reviews from Supabase…</p>");
+    setStatus('<p>Loading reviews from Supabase…</p>');
     allReviews = await fetchAllReviews(5000);
     occasionStats = buildOccasionStats(allReviews);
 
     // Add markers, always render pins first
     let added = 0;
     for (const p of placesCache) {
-      if (typeof p.lat !== "number" || typeof p.lng !== "number") continue;
+      if (typeof p.lat !== 'number' || typeof p.lng !== 'number') continue;
       const marker = L.marker([p.lat, p.lng], { icon: defaultIcon }).addTo(map);
-      marker.bindPopup(`<strong>${p.name ?? "Unnamed place"}</strong>`);
-      marker.on("click", () => setSelected(p));
+      marker.bindPopup(`<strong>${p.name ?? 'Unnamed place'}</strong>`);
+      marker.on('click', () => setSelected(p));
       markersByPlaceId.set(p.id, marker); // so ranked list can jump to pins
       added += 1;
     }
 
     setStatus(
-      `<p>Loaded <strong>${placesCache.length}</strong> places and <strong>${allReviews.length}</strong> reviews. Rendered <strong>${added}</strong> pins.</p>`
+      `<p>Loaded <strong>${placesCache.length}</strong> places and <strong>${allReviews.length}</strong> reviews. Rendered <strong>${added}</strong> pins.</p>`,
     );
 
-    refreshRankings(); 
-    vibeSelect.addEventListener("change", refreshRankings);
-    minReviewsEl.addEventListener("input", refreshRankings);
-    if (cuisineFilterEl) cuisineFilterEl.addEventListener("change", refreshRankings);
+    refreshRankings();
+    vibeSelect.addEventListener('change', refreshRankings);
+    minReviewsEl.addEventListener('input', refreshRankings);
+    if (cuisineFilterEl) cuisineFilterEl.addEventListener('change', refreshRankings);
 
     setSelected(null);
   } catch (err) {
@@ -511,59 +491,58 @@ async function main() {
 }
 
 // Form submission for reviews
-if(formEl) {
-  formEl.addEventListener("submit", async (e) => {
-    console.log("Review form submitted");
-  e.preventDefault();
-  if (!selectedPlace) return;
+if (formEl) {
+  formEl.addEventListener('submit', async (e) => {
+    console.log('Review form submitted');
+    e.preventDefault();
+    if (!selectedPlace) return;
 
-  const occasion = document.getElementById("occasion").value;
-  const food = Number(document.querySelector('input[name="foodRating"]:checked')?.value);
-  const value = Number(document.querySelector('input[name="valueRating"]:checked')?.value);
-  const vibe = Number(document.querySelector('input[name="vibeRating"]:checked')?.value);
-  const go_to_order = document.getElementById("order").value.trim() || null;
-  const note = document.getElementById("note").value.trim() || null;
+    const occasion = document.getElementById('occasion').value;
+    const food = Number(document.querySelector('input[name="foodRating"]:checked')?.value);
+    const value = Number(document.querySelector('input[name="valueRating"]:checked')?.value);
+    const vibe = Number(document.querySelector('input[name="vibeRating"]:checked')?.value);
+    const goToOrder = document.getElementById('order').value.trim() || null;
+    const note = document.getElementById('note').value.trim() || null;
 
-  try {
-    submitBtn.disabled = true;
-    submitBtn.textContent = "Submitting…";
+    try {
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Submitting…';
 
-    // Ensure that no NULL values 
-    if (![food, value, vibe].every((n) => Number.isFinite(n) && n >= 1 && n <= 5)) {
-      alert("Please enter Food/Value/Vibe ratings between 1 and 5.");
-      return;
-    }    
+      // Ensure that no NULL values
+      if (![food, value, vibe].every((n) => Number.isFinite(n) && n >= 1 && n <= 5)) {
+        alert('Please enter Food/Value/Vibe ratings between 1 and 5.');
+        return;
+      }
 
-    await insertReview({
-      place_id: selectedPlace.id,
-      occasion,
-      food,
-      value,
-      vibe,
-      go_to_order,
-      note,
-    });
+      await insertReview({
+        place_id: selectedPlace.id,
+        occasion,
+        food,
+        value,
+        vibe,
+        goToOrder,
+        note,
+      });
 
-    // Optional fields
-    document.getElementById("order").value = "";
-    document.getElementById("note").value = "";
+      // Optional fields
+      document.getElementById('order').value = '';
+      document.getElementById('note').value = '';
 
-    // Refresh the reviews panel
-    await loadReviews(selectedPlace.id);
+      // Refresh the reviews panel
+      await loadReviews(selectedPlace.id);
 
-    showReviewOverlay();
-
-  } catch (err) {
-    console.error(err);
-    alert(err.message ?? String(err));
-  } finally {
-    submitBtn.disabled = false;
-    submitBtn.textContent = "Submit review";
-  }
+      showReviewOverlay();
+    } catch (err) {
+      console.error(err);
+      alert(err.message ?? String(err));
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Submit review';
+    }
   });
 }
 
 main().catch((err) => {
-  console.error("Main crashed:", err);
+  console.error('Main crashed:', err);
   setStatus?.(`<p><strong>Error:</strong> ${err.message ?? String(err)}</p>`);
 });
