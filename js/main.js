@@ -58,6 +58,8 @@ function buildOccasionStats(reviews) {
   return stats;
 }
 
+let mapRef = null
+
 function renderRankedList(places, occasionStats, occasion, minReviews, cuisineFilter) {
   // give matches based on cuisine
   const candidates = cuisineFilter
@@ -101,10 +103,13 @@ function renderRankedList(places, occasionStats, occasion, minReviews, cuisineFi
         btn.addEventListener("click", () => {
           const placeId = btn.dataset.placeId;
           const marker = markersByPlaceId.get(placeId);
-          if (marker) {
+          if (marker && mapRef) {
+            // Zoom to marker (use setView or flyTo)
+            mapRef.setView(marker.getLatLng(), 17, { animate: true });          
             marker.openPopup();
             marker.fire("click");
           }
+          
         });
       });
     
@@ -251,6 +256,7 @@ let occasionStats = new Map();
 
 async function main() {
   const map = initMap();
+  mapRef = map;
 
   try {
     setStatus("<p>Loading places from Supabase…</p>");
@@ -296,9 +302,9 @@ if(formEl) {
   if (!selectedPlace) return;
 
   const occasion = document.getElementById("occasion").value;
-  const food = Number(document.getElementById("foodRating").value);
-  const value = Number(document.getElementById("valueRating").value);
-  const vibe = Number(document.getElementById("vibeRating").value);
+  const food = Number(document.querySelector('input[name="foodRating"]:checked')?.value);
+  const value = Number(document.querySelector('input[name="valueRating"]:checked')?.value);
+  const vibe = Number(document.querySelector('input[name="vibeRating"]:checked')?.value);
   const go_to_order = document.getElementById("order").value.trim() || null;
   const note = document.getElementById("note").value.trim() || null;
 

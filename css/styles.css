@@ -61,6 +61,8 @@ body {
   border-radius: 10px;
   background: var(--bg);
   padding: 10px;
+  display: grid;
+  align-items: center;
 }
 
 .footer {
@@ -74,6 +76,47 @@ button:focus-visible, a:focus-visible {
   outline: 3px solid #000;
   outline-offset: 2px;
 }
+
+.stars {
+  display: inline-flex;
+  flex-direction: row-reverse; 
+  gap: 4px;
+}
+
+.stars input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.stars label {
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  user-select: none;
+  opacity: 0.35;
+}
+
+/* Focus ring for keyboard users */
+.stars input:focus-visible + label {
+  outline: 3px solid #000;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Fill stars on hover */
+/* stylelint-disable-next-line no-descending-specificity */
+.stars label:hover,
+.stars label:hover ~ label {
+  opacity: 1;
+}
+
+/* Fill stars when selected */
+.stars input:checked + label,
+.stars input:checked + label ~ label {
+  opacity: 1;
+}
+
 
 @media (width <= 900px) {
   .layout {

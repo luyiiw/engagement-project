@@ -72,14 +72,71 @@
     <option value="study_work">Study/work</option>
   </select>
 
-  <label for="foodRating">Food (1–5)</label>
-  <input id="foodRating" type="number" min="1" max="5" value="4" required />
+  <!-- Replacing number ranking with star rating -->
+  <!-- Food -->
+<div class="field">
+  <label>Food</label>
+  <div class="stars" role="radiogroup" aria-label="Food rating">
+    <input type="radio" id="food-5" name="foodRating" value="5" required />
+    <label for="food-5" aria-label="5 stars">★</label>
+  
+    <input type="radio" id="food-4" name="foodRating" value="4" />
+    <label for="food-4" aria-label="4 stars">★</label>
+  
+    <input type="radio" id="food-3" name="foodRating" value="3" />
+    <label for="food-3" aria-label="3 stars">★</label>
+  
+    <input type="radio" id="food-2" name="foodRating" value="2" />
+    <label for="food-2" aria-label="2 stars">★</label>
+  
+    <input type="radio" id="food-1" name="foodRating" value="1" />
+    <label for="food-1" aria-label="1 star">★</label>
+  </div>
+  
+</div>
 
-  <label for="valueRating">Value (1–5)</label>
-  <input id="valueRating" type="number" min="1" max="5" value="4" required />
+<!-- Value -->
+<div class="field">
+  <label>Value</label>
+  <div class="stars" data-name="valueRating" role="radiogroup" aria-label="Value rating">
+    <input type="radio" id="value-5" name="valueRating" value="5" required />
+    <label for="value-5" aria-label="5 stars">★</label>
 
-  <label for="vibeRating">Vibe (1–5)</label>
-  <input id="vibeRating" type="number" min="1" max="5" value="4" required />
+    <input type="radio" id="value-4" name="valueRating" value="4" />
+    <label for="value-4" aria-label="4 stars">★</label>
+
+    <input type="radio" id="value-3" name="valueRating" value="3" />
+    <label for="value-3" aria-label="3 stars">★</label>
+
+    <input type="radio" id="value-2" name="valueRating" value="2" />
+    <label for="value-2" aria-label="2 stars">★</label>
+
+    <input type="radio" id="value-1" name="valueRating" value="1" />
+    <label for="value-1" aria-label="1 star">★</label>
+  </div>
+</div>
+
+<!-- Vibe -->
+<div class="field">
+  <label>Vibe</label>
+  <div class="stars" data-name="vibeRating" role="radiogroup" aria-label="Vibe rating">
+    <input type="radio" id="vibe-5" name="vibeRating" value="5" required />
+    <label for="vibe-5" aria-label="5 stars">★</label>
+
+    <input type="radio" id="vibe-4" name="vibeRating" value="4" />
+    <label for="vibe-4" aria-label="4 stars">★</label>
+
+    <input type="radio" id="vibe-3" name="vibeRating" value="3" />
+    <label for="vibe-3" aria-label="3 stars">★</label>
+
+    <input type="radio" id="vibe-2" name="vibeRating" value="2" />
+    <label for="vibe-2" aria-label="2 stars">★</label>
+
+    <input type="radio" id="vibe-1" name="vibeRating" value="1" />
+    <label for="vibe-1" aria-label="1 star">★</label>
+  </div>
+</div>
+
 
   <label for="order">Go-to order (optional)</label>
   <input id="order" type="text" />
