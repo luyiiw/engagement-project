@@ -113,3 +113,5 @@ While *Find Your Spot* is fully functional, there are several areas where the ap
 3. **Visual identity and branding:** The current design emphasizes clarity and usability, but the application could benefit from a stronger visual identity through more distinctive colors, custom markers, and refined typography.
 
 4. **Recommendation enhancements:** As more reviews are collected, the ranking logic could be expanded to better surface highly rated places with fewer reviews or incorporate more nuanced recommendation strategies.
+
+5. **Site Accessibility:** Part of the issue with ensuring accessibility on this site is that the markers must remain clickable to users. By making markers not tabbable (to avoid tabbing the 700+ markers) it would make the user experience with the other interactive parts of the application easier. However, it causes other accesibility problems. Hence, accessibility on this tool needs greater refinement moving forward.
