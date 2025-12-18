@@ -1,4 +1,8 @@
 # Find Your Spot - A Philly Food Finder
+Lu Yii Wong
+
+Fall 2025
+
 **Find Your Spot** is a community-driven food discovery tool designed to help people choose restaurants based on *what kind of experience they’re looking for*, not just a single overall rating.
 
 Unlike traditional food rating apps that rank restaurants against each other, this project recognizes that a great $15 noodle shop and a special-occasion restaurant can both be “excellent” but just for different moments. This project was inspired by my personal experience with restaurant rating apps like Beli and Yelp. I wanted to take a crack at creating a product that offers users a tailored experience when selecting their next food destination.
