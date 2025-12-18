@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Philly Food Finder — Context-first Reviews</title>
+
+    <link rel="stylesheet" href="./css/styles.css" />
+
+    <!-- Leaflet -->
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
+  </head>
+
+  <body>
+    <header class="site-header">
+      <h1>Philly Food Finder</h1>
+      <p class="tagline">Find restaurants by the experience you want (budget, date night, adventure, etc.).</p>
+    </header>
+
+    <main class="layout" role="main">
+      <section class="panel" aria-label="Map panel">
+        <div id="map" class="map" role="application" aria-label="Restaurant map"></div>
+      </section>
+
+      <aside class="sidebar" aria-label="Info panel">
+        <h2>Find a spot</h2>
+          <div class="card">
+            <label for="vibe">What are you looking for?</label>
+            <select id="vibe">
+              <option value="budget">Budget</option>
+              <option value="date_night">Date night</option>
+              <option value="group_hang">Group hang</option>
+              <option value="solo_comfort">Solo comfort</option>
+              <option value="adventure">Adventure</option>
+              <option value="study_work">Study/work</option>
+            </select>
+
+              <label for="cuisineFilter" style="margin-top:8px;">Cuisine</label>
+              <select id="cuisineFilter">
+                <option value="">Any cuisine</option>
+              </select>
+
+            <label for="minReviews" style="margin-top:8px;">Minimum reviews</label>
+            <input id="minReviews" type="number" min="0" value="1" />
+          </div>
+          
+        <h2>Top matches</h2>
+          <div id="ranked" class="card" aria-live="polite"> 
+            <p>Loading…</p>
+          </div>
+
+        <h2>Selected place</h2>
+        <div id="selected" class="card" aria-live="polite">
+          <p>Click a pin to see details.</p>
+        </div>
+
+        <h2>Leave a review</h2>
+<form id="review-form" class="card">
+  <label for="occasion">Occasion</label>
+  <select id="occasion" required>
+    <option value="">Select…</option>
+    <option value="budget">Budget</option>
+    <option value="date_night">Date night</option>
+    <option value="group_hang">Group hang</option>
+    <option value="solo_comfort">Solo comfort</option>
+    <option value="adventure">Adventure</option>
+    <option value="study_work">Study/work</option>
+  </select>
+
+  <label for="foodRating">Food (1–5)</label>
+  <input id="foodRating" type="number" min="1" max="5" value="4" required />
+
+  <label for="valueRating">Value (1–5)</label>
+  <input id="valueRating" type="number" min="1" max="5" value="4" required />
+
+  <label for="vibeRating">Vibe (1–5)</label>
+  <input id="vibeRating" type="number" min="1" max="5" value="4" required />
+
+  <label for="order">Go-to order (optional)</label>
+  <input id="order" type="text" />
+
+  <label for="note">Note (optional)</label>
+  <textarea id="note" rows="3"></textarea>
+
+  <button id="submit-review" type="submit" disabled>Pick a place first</button>
+</form>
+
+<h2>Recent reviews</h2>
+<div id="reviews" class="card" aria-live="polite">
+  <p>No place selected.</p>
+</div>
+
+
+        <h2>Load status</h2>
+        <div id="status" class="card" aria-live="polite">
+          <p>Loading…</p>
+        </div>
+      </aside>
+    </main>
+
+    <!-- Leaflet -->
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
+
+    <!-- Supabase JS (UMD build) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- Your scripts -->
+    <script type="module" src="./js/main.js"></script>
+
+    <footer class="footer">
+      <p>© OpenStreetMap contributors (ODbL). Restaurant POIs sourced from OpenStreetMap.</p>
+    </footer>
+  </body>
+</html>

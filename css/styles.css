@@ -1,0 +1,86 @@
+:root {
+  --border: #ddd;
+  --bg: #fafafa;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, Roboto, Helvetica, Arial, sans-serif;
+  line-height: 1.4;
+}
+
+.site-header {
+  padding: 16px;
+  border-bottom: 1px solid var(--border);
+  background: white;
+}
+
+.site-header h1 {
+  margin: 0 0 4px;
+  font-size: 20px;
+}
+
+.tagline {
+  margin: 0;
+  color: #444;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 12px;
+  padding: 12px;
+}
+
+.panel {
+  min-height: 70vh;
+}
+
+.map {
+  width: 100%;
+  height: 70vh;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sidebar h2 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.card {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg);
+  padding: 10px;
+}
+
+.footer {
+  padding: 12px;
+  border-top: 1px solid var(--border);
+  color: #555;
+  font-size: 12px;
+}
+
+button:focus-visible, a:focus-visible {
+  outline: 3px solid #000;
+  outline-offset: 2px;
+}
+
+@media (width <= 900px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .map {
+    height: 60vh;
+  }
+}
